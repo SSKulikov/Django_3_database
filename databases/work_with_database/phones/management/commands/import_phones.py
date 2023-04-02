@@ -9,12 +9,21 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
-        with open('phones.csv', 'r') as csvfile:
+        with open('phones.csv', 'r') as file:
+            phones = list(csv.DictReader(file, delimiter=';'))
 
-            phone_reader = csv.reader(csvfile, delimiter=';')
-            # пропускаем заголовок
-            next(phone_reader)
-
-            for line in phone_reader:
-                # TODO: Добавьте сохранение модели
-                pass
+            for phone in phones:
+                available_phone = Phone.objects.filter(id=phone['id'])
+                if not available_phone:
+                    new_phone = Phone(
+                        id=phone['id'],
+                        name=phone['name'],
+                        price=phone['price'],
+                        image=phone['image'],
+                        release_date=phone['release_date'],
+                        lte_exists=phone['lte_exists'],
+                        slug=phone['name'].lower().replace(' ', '-')
+                    )
+                    new_phone.save()
+                else:
+                    print(f'Телефон {phone["id"]} уже в базе данных')
